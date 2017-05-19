@@ -13,6 +13,7 @@ class EmailController extends Controller
         $user = User::where('confirmation_token',$token)->first();
 
         if(is_null($user)){
+            flash('邮箱验证失败')->error();
             return redirect('/');
         }
 
@@ -22,6 +23,7 @@ class EmailController extends Controller
 
         if(!Auth::check()){
             Auth::login($user); //登录
+            flash('邮箱验证成功')->success();
             return redirect('/home');
         }
         return redirect('/');

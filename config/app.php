@@ -77,7 +77,7 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => 'zh-CN',
 
     /*
     |--------------------------------------------------------------------------
@@ -168,6 +168,7 @@ return [
          */
         Laravel\Tinker\TinkerServiceProvider::class,
         Naux\Mail\SendCloudServiceProvider::class,
+        Laracasts\Flash\FlashServiceProvider::class, //消息提示
 
         /*
          * Application Service Providers...
