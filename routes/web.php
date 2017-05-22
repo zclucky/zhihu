@@ -11,13 +11,22 @@
 |
 */
 
+//欢迎界面
 Route::get('/', function () {
     return view('welcome');
 });
 
+//用户认证服务
 Auth::routes();
 
+//主页
 Route::get('/home', 'HomeController@index')->name('home');
 
-
+//发送邮件
 Route::get('/email/verify/{token}',['as'=>'email.verify','uses'=>'EmailController@verify']);
+
+//提问
+Route::resource('questions','QuestionsController');
+
+//测试
+Route::get('/test',"HomeController@test")->name('test');
