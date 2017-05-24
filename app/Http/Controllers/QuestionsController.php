@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreQuestionRequest;
 use App\Question;
+use App\Topic;
 use Illuminate\Http\Request;
 use Auth;
 
@@ -44,6 +45,13 @@ class QuestionsController extends Controller
      */
     public function store(StoreQuestionRequest $request)
     {
+        $select2s = $request->select2;
+        foreach ($select2s as $key => $item){
+            if(!is_numeric($item)){
+                $topic = Topic::create(['name' => $item]);
+                $select2s[$key] = $topic->id;
+            }
+        }
         $data = [
             'title' => $request->title,
             'body'  => $request->body,
@@ -51,6 +59,7 @@ class QuestionsController extends Controller
         ];
 
         $question = Question::create($data);
+        $question->topics()->sync($select2s,false); //向中间表添加关联
         return redirect()->route('questions.show',[$question]);
     }
 
