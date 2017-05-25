@@ -27,6 +27,9 @@ class HomeController extends Controller
     }
 
     public function test(){
-        echo config('app.url');
+        $email = "myxxqy@gmail.com";
+        $hash = md5(strtolower(trim($email)));
+        $url = "http://www.gravatar.com/avatar/$hash?s=100";
+        return $url;
     }
 }
