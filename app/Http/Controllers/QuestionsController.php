@@ -4,17 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreQuestionRequest;
 use App\Question;
+use App\Repositories\QuestionRepository;
 use App\Topic;
 use Illuminate\Http\Request;
 use Auth;
 
 class QuestionsController extends Controller
 {
-    public function __construct()
+    protected $qusetionRepository;
+
+    public function __construct(QuestionRepository $questionRepository)
     {
         $this->middleware('auth',[
             'except' => ['index','show'] //排除这两个方法
         ]);
+
+        $this->qusetionRepository = $questionRepository;
     }
 
     /**
@@ -45,20 +50,14 @@ class QuestionsController extends Controller
      */
     public function store(StoreQuestionRequest $request)
     {
-        $select2s = $request->select2;
-        foreach ($select2s as $key => $item){
-            if(!is_numeric($item)){
-                $topic = Topic::create(['name' => $item]);
-                $select2s[$key] = $topic->id;
-            }
-        }
+        $select2s = $this->normalizeTopic($request->select2);
         $data = [
             'title' => $request->title,
             'body'  => $request->body,
             'user_id' => Auth::id(),
         ];
 
-        $question = Question::create($data);
+        $question = $this->qusetionRepository->create($data);
         $question->topics()->sync($select2s,false); //向中间表添加关联
         return redirect()->route('questions.show',[$question]);
     }
@@ -71,7 +70,7 @@ class QuestionsController extends Controller
      */
     public function show($id)
     {
-        $question = Question::findOrFail($id);
+        $question = $this->qusetionRepository->byIdWithTopic($id);
         return view('questions.show',compact('question'));
     }
 
@@ -107,5 +106,26 @@ class QuestionsController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     *  过滤包含有数字和文本的数组，全部变成数字
+     * @param array $topics
+     * @return array $newTopics
+     */
+    public function normalizeTopic(array $topics)
+    {
+        $newTopics = collect($topics)->map(function ($topic) {
+            if (is_numeric($topic)) {
+                Topic::findOrFail($topic)->increment('questions_count'); //自增
+                return (int)$topic;
+            }
+            $newTopic =  Topic::create([
+                'name' => $topic,
+                'questions_count' => 1
+            ]);
+            return $newTopic->id;
+        });
+        return $newTopics->toArray();
     }
 }
