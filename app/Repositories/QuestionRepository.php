@@ -15,4 +15,9 @@ class QuestionRepository
     public function create(array $data){
         return Question::create($data);
     }
+
+    public function byId($id)
+    {
+        return Question::find($id);
+    }
 }

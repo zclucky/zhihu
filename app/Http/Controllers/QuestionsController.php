@@ -7,7 +7,6 @@ use App\Repositories\QuestionRepository;
 use App\Topic;
 use Illuminate\Http\Request;
 use Auth;
-
 class QuestionsController extends Controller
 {
     protected $qusetionRepository;
@@ -17,6 +16,7 @@ class QuestionsController extends Controller
         $this->middleware('auth',[
             'except' => ['index','show'] //排除这两个方法
         ]);
+
 
         $this->qusetionRepository = $questionRepository;
     }
@@ -81,7 +81,13 @@ class QuestionsController extends Controller
      */
     public function edit($id)
     {
-        //
+        $question = $this->qusetionRepository->byId($id);
+
+        if(Auth::user()->owns($question)){
+            return view("questions.edit",compact('question'));
+        }
+
+        return back();
     }
 
     /**
@@ -91,9 +97,20 @@ class QuestionsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(StoreQuestionRequest $request, $id)
     {
-        //
+        $question = $this->qusetionRepository->byId($id);
+
+        $topics = $this->normalizeTopic($request->select2);
+
+        $question->update([
+            'title' => $request->get('title'),
+            'body'  => $request->get('body')
+        ]);
+
+        $question->topics()->sync($topics); //向中间表添加关联
+        return redirect()->route('questions.show',[$question]);
+
     }
 
     /**

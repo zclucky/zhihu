@@ -16,6 +16,14 @@
                     <div class="panel-body">
                         {!! $question->body !!}
                     </div>
+
+                    <div class="panel-footer">
+                        @if(Auth::user() && Auth::user()->owns($question))
+                            <span class="edit">
+                                <a class="btn btn-info btn-sm " href="/questions/{{ $question->id }}/edit">编辑</a>
+                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
